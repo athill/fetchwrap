@@ -5,6 +5,7 @@ import fetchMock from './fetchwrapper.js';
 describe('fetchMock', () =>  {
 	afterEach(() => {
 		fetchMock.off();
+		fetchMock.on();
 	});
 	it('toggles mocking', () => {
 		expect(fetchMock.mocking).toBe(true);
@@ -17,7 +18,6 @@ describe('fetchMock', () =>  {
 
 	it('builds a structure of mocks', () => {
 		expect(fetchMock.mocks).toEqual({});
-		fetchMock.on();
 		fetchMock.mock('GET', '/foo', { foo: 'bar' });
 		fetchMock.mockGet('/foo', 200);
 		fetchMock.mock('POST', '/foo', { biz: 'bang', status: 400 });
@@ -28,7 +28,6 @@ describe('fetchMock', () =>  {
 	});
 
 	it('mocks a mock', () => {
-		fetchMock.on();
 		fetchMock.mock('GET', '/foo', { foo: 'bar' });
 		fetch('/foo')
 			.then(response => response.json())
