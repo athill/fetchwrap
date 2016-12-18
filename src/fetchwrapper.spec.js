@@ -51,9 +51,33 @@ describe('fetchwrap', () =>  {
 			.catch(error => console.error(error));
 	});
 
-	it('should allow you to see which mocks were not called', () => {
+	describe('urlPatternMatches', () => {
+		it('matches strings', () => {
+			const string = '/foo';
+			fetchwrap.mockGet(string);
+			expect(fetchwrap.urlPatternMatches(string)).toBe(true);
+			expect(fetchwrap.urlPatternMatches('/fidelity')).toBe(false);
+		});
+		it('matches regex strings', () => {
+			const regex = '/bar.*';
+			fetchwrap.mockGet(regex);
+			expect(fetchwrap.urlPatternMatches('/bar')).toBe(true);
+			expect(fetchwrap.urlPatternMatches('/baritone')).toBe(true);
+			expect(fetchwrap.urlPatternMatches('/fidelity')).toBe(false);
+		});		
+	});
+
+	xit('should allow you to see which mocks were not called', () => {
 		standardMocks();
-		fetchwrap.validate();
-		// console.log(uncalled);
+		expect(fetchwrap.validate().length).toBe(4);
+		fetch('/foo');
+		expect(fetchwrap.validate().length).toBe(3);
+		fetch('/foo');
+		expect(fetchwrap.validate().length).toBe(2);
+		fetch('/foo', { method: 'POST' });
+		expect(fetchwrap.validate().length).toBe(2);		
+		uncalled = fetchwrap.validate();
+
+		console.log(uncalled);
 	});
 });
