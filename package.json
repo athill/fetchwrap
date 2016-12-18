@@ -4,6 +4,7 @@
   "private": true,
   "devDependencies": {
     "babel-cli": "^6.18.0",
+    "http-status-codes": "^1.0.6",
     "react-scripts": "0.8.4"
   },
   "dependencies": {

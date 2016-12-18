@@ -1,4 +1,4 @@
-
+import HttpStatus from 'http-status-codes';
 
 class Fetchwrap {
 
@@ -20,13 +20,13 @@ class Fetchwrap {
 					this.mocks[url][method][mocksLen - 1] : 	
 					this.mocks[url][method][this.run[url] + 1];
 				this.run[url][method]++; 	//// optimistic
-				return this.promise(data);
+				return this.promise(this.fixPayload(url, data));
 			} else {
 				if (!(url in this.run)) {
 					this.run[url] = {};
 				}
 				this.run[url][method] = 1;
-				return this.promise(this.mocks[url][method][0]);
+				return this.promise(this.fixPayload(url, this.mocks[url][method][0]));
 			}
 		} else {
 			console.error('Unmatched url: ', url, Object.keys(this.mocks));
@@ -44,27 +44,6 @@ class Fetchwrap {
 		method = method.toUpperCase();
 		if (!this.methods.includes(method)) {
 			throw new Error('Bad Method ['+method+']. Valid methods are ' + this.methods, method);
-		}
-		if (Number.isInteger(payload)) {
-			payload = {
-				options: {
-					status: payload
-				},
-				body: {}
-			}
-		} else if (payload instanceof Object) {
-			if (!('body' in payload)) {
-				const newPayload = { body: payload, options: { url } };
-				if ('status' in payload) {
-					newPayload.options.status = payload.status;
-					delete(newPayload.body.status);
-				} else {
-					newPayload.options.status = 200;
-				}
-				payload = newPayload;
-			}
-		} else {
-			throw new Error('bad payload');
 		}
 		if (url in this.mocks && method in this.mocks[url]) {
 			this.mocks[url][method].push(payload);
@@ -92,6 +71,32 @@ class Fetchwrap {
 		this.mock('PUT', url, payload);
 	}
 
+	fixPayload(url, payload) {
+		if (Number.isInteger(payload)) {
+			return {
+				options: {
+					status: payload,
+					statusText: HttpStatus.getStatusText(payload)
+				},
+				body: {}
+			}
+		} else if (payload instanceof Object) {
+			const newPayload = 'body' in payload ? 
+				{ ...payload, options: { url }  } : 
+				{ body: payload, options: { url } };
+			if ('status' in payload) {
+				newPayload.options.status = payload.status;
+				delete(newPayload.body.status);
+			} else {
+				newPayload.options.status = 200;
+			}
+			newPayload.options.statusText = HttpStatus.getStatusText(newPayload.options.status);	
+			return newPayload;
+		} else {
+			throw new Error('bad payload');
+		}		
+	}
+
 	on() {
 		this.mocking = true;
 	}
@@ -99,6 +104,36 @@ class Fetchwrap {
 	off() {
 		this.mocking = false;
 		this.mocks = {};
+		this.run = {};
+	}
+
+	clear() {
+		this.mocks = {};
+		this.run = {};		
+	}
+
+	validate() {
+		let notCalled = [];
+		Object.getOwnPropertyNames(this.mocks).forEach(url => {
+			Object.getOwnPropertyNames(this.mocks[url]).forEach(method => {
+				if (!(url in this.run) || !(method) in this.run[url]) {
+					this.mocks[url][method].forEach(payload => notCalled.push({
+						url,
+						method,
+						payload
+					}));
+				} else if (this.mocks[url][method].length > this.run[url][method]) {
+					for (let i = this.run[url][method] - 1; i < this.mocks[url][method].length; i++) {
+						notCalled.push({
+							url,
+							method,
+							payload							
+						});
+					}
+				}
+			});
+		});
+		return notCalled;
 	}
 
 }
