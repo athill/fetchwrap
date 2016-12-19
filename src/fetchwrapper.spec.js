@@ -14,14 +14,18 @@ describe('fetchwrap', () =>  {
 	afterEach(() => {
 		fetchwrap.clear();
 	});
-	it('toggles mocking', () => {
-		expect(fetchwrap.mocking).toBe(true);
-		fetchwrap.off();
-		expect(fetchwrap.mocking).toBe(false);
-		fetchwrap.on();
-		expect(fetchwrap.mocking).toBe(true);
 
+	describe('on()/off()', () => {
+		it('toggles mocking', () => {
+			expect(fetchwrap.mocking).toBe(true);
+			fetchwrap.off();
+			expect(fetchwrap.mocking).toBe(false);
+			fetchwrap.on();
+			expect(fetchwrap.mocking).toBe(true);
+
+		});
 	});
+
 
 	it('builds a structure of mocks', () => {
 		expect(fetchwrap.mocks).toEqual({});
@@ -67,7 +71,7 @@ describe('fetchwrap', () =>  {
 		});		
 	});
 
-	xit('should allow you to see which mocks were not called', () => {
+	it('should allow you to see which mocks were not called', () => {
 		standardMocks();
 		expect(fetchwrap.validate().length).toBe(4);
 		fetch('/foo');
@@ -75,9 +79,9 @@ describe('fetchwrap', () =>  {
 		fetch('/foo');
 		expect(fetchwrap.validate().length).toBe(2);
 		fetch('/foo', { method: 'POST' });
-		expect(fetchwrap.validate().length).toBe(2);		
-		uncalled = fetchwrap.validate();
-
-		console.log(uncalled);
+		expect(fetchwrap.validate().length).toBe(1);
+		fetch('/bar');
+		expect(fetchwrap.validate().length).toBe(0);		
+		
 	});
 });

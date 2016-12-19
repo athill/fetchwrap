@@ -3,13 +3,25 @@ import HttpStatus from 'http-status-codes';
 class Fetchwrap {
 
 	constructor(mocking = true) {
-		this.mocking = mocking;
-		this.mocks = {};
-		this.run = {};
-		this.originalFetch = window.fetch;
-		this.methods = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT']
+		this.mocking = mocking;   			//// whether currently mocking
+		this.mocks = {};					//// data structure of registered mocks
+		this.run = {};						//// data structure of counts of registered mocks that have been run
+		this.originalFetch = window.fetch;	//// native window.fetch
+		//// valid http methods
+		this.methods = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT'];
+		//// generate convenience mock methods. e.g., mockGet() ...
+		this.methods.forEach(method => {
+			const methodName = 'mock' + method.charAt(0) + method.toLowerCase().slice(1);
+			this[methodName] = (url, payload={}) => this.mock(method, url, payload);
+		});
 	}
 
+	/**
+	 * Mock version of fetch. Executes registered mock if it exists or throws error
+	 * @param {string} url - endpoint to fetch data 
+	 * @param {Object} options - options for fetch, {@link https://github.com/github/fetch}
+	 * @return a Promise
+	 */
 	fetch(url, options={}) {
 		const method = 'method' in options ? options.method : 'GET';
 		if (!this.methods.includes(method)) {
@@ -31,17 +43,27 @@ class Fetchwrap {
 				return this.promise(this.fixPayload(url, this.mocks[url][method][0]));
 			}
 		} else {
-			console.error('Unmatched url: ', url, Object.keys(this.mocks));
+			throw new Error('Unmatched url: ['+url+']. Valid endpoints are ' + Object.keys(this.mocks));
 		}
 	}
 
-	//// returns a promise, like ftch would
+	/**
+	 * returns a promise, like ftch would
+	 * @params {Object} data - mock response data
+	 * @return a Propmise
+	 */
 	promise(data) {
 		return new Promise((resolve, reject) => {
 			resolve(new Response(JSON.stringify(data.body), data.options));
 		});
 	}
 
+	/**
+	 * registers a mock with this.mocks
+	 * @param {string} method - a valid method in this.methods
+	 * @param {string} url - endpoint 
+	 * @param {Object} payload - data used to build response
+	 */
 	mock(method, url, payload={}) {
 		method = method.toUpperCase();
 		if (!this.methods.includes(method)) {
@@ -57,24 +79,13 @@ class Fetchwrap {
 		}
 	}
 
-	mockGet(url, payload) {
-		this.mock('GET', url, payload);
-	}
-
-	mockPost(url, payload) {
-		this.mock('POST', url, payload);
-	}
-
-	mockDelete(url, payload) {
-		this.mock('DELETE', url, payload);
-	}
-
-	mockPut(url, payload) {
-		this.mock('PUT', url, payload);
-	}
-
+	/**
+	 * Covert mock metadata to proper Request argument format
+	 * @param {string} url - the requested url
+	 * @param {object|number} payload - metadata for mctching mock
+	 * @return {object} the formatted payload 
+	 */
 	fixPayload(url, payload) {
-
 		if (Number.isInteger(payload)) {
 			return {
 				options: {
@@ -101,6 +112,11 @@ class Fetchwrap {
 		}		
 	}
 
+	/**
+	 * Checks if a url matches a registered mock url via string equality or regex
+	 * @param {string} url - a url to match
+	 * @return {boolean} whether the url matches a registered mock
+	 */
 	urlPatternMatches(url) {
 		if (url in this.mocks) {
 			return true;
@@ -116,33 +132,46 @@ class Fetchwrap {
 		return false;
 	}	
 
+
+	/** 
+	 * turns mocking on
+	 */
 	on() {
 		this.mocking = true;
 	}
 
+	/**
+	 * turns mcoking off and resets mocks
+     */
 	off() {
 		this.mocking = false;
 		this.mocks = {};
 		this.run = {};
 	}
 
+	/**
+	 * resets mocks
+	 */ 
 	clear() {
 		this.mocks = {};
 		this.run = {};		
 	}
 
+	/**
+	 * returns an array of mocks not called
+	 */
 	validate() {
 		let notCalled = [];
 		Object.getOwnPropertyNames(this.mocks).forEach(url => {
 			Object.getOwnPropertyNames(this.mocks[url]).forEach(method => {
-				if (!(url in this.run) || !(method) in this.run[url]) {
+				if (!(url in this.run) || !(method in this.run[url])) {
 					this.mocks[url][method].forEach(payload => notCalled.push({
 						url,
 						method,
 						payload
 					}));
 				} else if (this.mocks[url][method].length > this.run[url][method]) {
-					for (let i = this.run[url][method] - 1; i < this.mocks[url][method].length; i++) {
+					for (let i = this.run[url][method]; i < this.mocks[url][method].length; i++) {
 						notCalled.push({
 							url,
 							method,
@@ -158,7 +187,7 @@ class Fetchwrap {
 }
 
 
-const fetchwrap = new Fetchwrap(true);
+const fetchwrap = new Fetchwrap();
 
 //// assumes that 'fetchwrap' is somehow available
 const fetchwrapper = (url, options) => {
