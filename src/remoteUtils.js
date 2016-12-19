@@ -56,3 +56,44 @@ export const getResource = (path, onFailure) => () => {
       throw error;
     });
 };
+
+export const fetchSubmit = (url, method, values, headers = {}) => {
+  return fetch(url, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/hal+json',
+      ...headers
+    },
+    body: JSON.stringify(values),
+    credentials: 'same-origin'
+  });
+};
+
+export const parseFormErrors = (errors) => _.zipObject(errors.map(e => e.property), errors.map(e => e.message));
+
+export const submitFormWithCsrf = (url, method, isDryRun = false) => (values) => {
+  return new Promise((resolve, reject) => {
+    fetch('/csrf/', { credentials: 'same-origin' })
+      .then(parseJSON('Failed to obtain CSRF token'))
+      .then(json => fetchSubmit(url, method, values, { [json.headerName]: json.token, 'X-DRY-RUN': isDryRun }))
+      .then(response => {
+        // If we get a 204 response, that means that dry-run validation succeeded
+        if (response.status === 204) {
+          resolve();
+        }
+        return response;
+      })
+      .then(response => response.json()
+        .then(json => {
+          if (response.ok) {
+            resolve(json);
+          } else if (response.status === 400) {
+            reject(new SubmissionError(parseFormErrors(json.errors)));
+          } else {
+            throw new Error('A system error has occurred. Please try again later.');
+          }
+        }))
+      .catch(error => reject(new SubmissionError({ _error: [ error.message ] })));
+  });
+};
