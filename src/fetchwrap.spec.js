@@ -1,4 +1,4 @@
-import fetchwrap from './fetchwrapper.js';
+import fetchwrap from './fetchwrap.js';
 
 describe('fetchwrap', () =>  {
 	const standardMockStructure =  {"/bar": {"GET": [{"a": "b"}]}, "/foo": {"GET": [{"foo": "bar"}, 200], "POST": [{"biz": "bang", "status": 400}]}};
