@@ -1,20 +1,45 @@
 {
   "name": "fetchwrap",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.8.0",
+  "description": "Fetch mocking framework",
+  "main": "bin/index.js",
+  "scripts": {
+    "test": "jest --env=jsdom",
+    "build": "node_modules/webpack/bin/webpack.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/athill/fetchwrap.git"
+  },
+  "keywords": [
+    "fetch",
+    "mock"
+  ],
+  "author": "athill <athill@iu.edu>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/athill/fetchwrap/issues"
+  },
+  "homepage": "https://github.com/athill/fetchwrap#readme",
   "devDependencies": {
-    "babel-cli": "^6.18.0",
-    "http-status-codes": "^1.0.6",
-    "react-scripts": "0.8.4"
+    "babel-core": "^6.21.0",
+    "babel-jest": "^18.0.0",
+    "babel-loader": "^6.2.10",
+    "babel-polyfill": "^6.20.0",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-stage-2": "^6.18.0",
+    "jest": "^18.1.0",
+    "jsdom": "^9.9.1",
+    "node-fetch": "^1.6.3",
+    "promise": "^7.1.1",
+    "whatwg-fetch": "^2.0.1"
   },
   "dependencies": {
-    "react": "^15.4.1",
-    "react-dom": "^15.4.1"
+    "http-status-codes": "^1.0.6"
   },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+  "jest": {
+    "setupFiles": [
+      "<rootDir>/config/polyfills.js"
+    ]
   }
 }

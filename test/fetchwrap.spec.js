@@ -1,4 +1,4 @@
-import fetchwrap from './fetchwrap.js';
+import fetchwrap from '../src/fetchwrap.js';
 
 describe('fetchwrap', () =>  {
 	const standardMockStructure =  {"/bar": {"GET": [{"a": "b"}]}, "/foo": {"GET": [{"foo": "bar"}, 200], "POST": [{"biz": "bang", "status": 400}]}};
@@ -6,7 +6,7 @@ describe('fetchwrap', () =>  {
 
 	const standardMocks = () => {
 		fetchwrap.mock('GET', '/foo', { foo: 'bar' });
-		fetchwrap.mockGet('/foo', 200);
+		fetchwrap.get('/foo', 200);
 		fetchwrap.mock('POST', '/foo', { biz: 'bang', status: 400 });
 		fetchwrap.mock('GET', '/bar', { a: 'b' });
 	};
@@ -70,13 +70,13 @@ describe('fetchwrap', () =>  {
 	describe('urlPatternMatches', () => {
 		it('matches strings', () => {
 			const string = '/foo';
-			fetchwrap.mockGet(string);
+			fetchwrap.get(string);
 			expect(fetchwrap.urlPatternMatches(string)).toBe(true);
 			expect(fetchwrap.urlPatternMatches('/fidelity')).toBe(false);
 		});
 		it('matches regex strings', () => {
 			const regex = '/bar.*';
-			fetchwrap.mockGet(regex);
+			fetchwrap.get(regex);
 			expect(fetchwrap.urlPatternMatches('/bar')).toBe(true);
 			expect(fetchwrap.urlPatternMatches('/baritone')).toBe(true);
 			expect(fetchwrap.urlPatternMatches('/fidelity')).toBe(false);
