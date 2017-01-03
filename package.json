@@ -4,7 +4,7 @@
   "description": "Fetch mocking framework",
   "main": "bin/index.js",
   "scripts": {
-    "test": "jest --env=jsdom",
+    "test": "jest --env=jsdom --watch",
     "build": "node_modules/webpack/bin/webpack.js"
   },
   "repository": {

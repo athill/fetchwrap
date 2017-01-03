@@ -94,8 +94,17 @@ describe('fetchwrap', () =>  {
 			fetch('/foo', { method: 'POST' });
 			expect(fetchwrap.validate().length).toBe(1);
 			fetch('/bar');
-			expect(fetchwrap.validate().length).toBe(0);		
-			
+			expect(fetchwrap.validate().length).toBe(0);	
+		});
+	});
+
+	describe('matches', () => {
+		it('keeps track of matches', () => {
+			standardMocks();
+			fetch('/foo');
+			expect(fetchwrap.matches).toEqual([ { url: '/foo', options: {} } ]);
+			fetch('/foo', { method: 'POST' });
+			expect(fetchwrap.matches).toEqual([ { url: '/foo', options: {} }, { url: '/foo', options: { method: 'POST' } } ]);
 		});
 	});
 });
