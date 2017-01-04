@@ -124,7 +124,7 @@ class Fetchwrap {
 	 * @return {boolean} whether the url matches a registered mock
 	 */
 	urlPatternMatches(url) {
-    const [path, query] =  url.split('?');
+    	const [path, query] =  url.split('?');
 		if (path in this.mocks) {
 			return true;
 		}
