@@ -32,7 +32,7 @@ If multiple mocks are registered for the same method/pattern, the mocks will be 
 
 ### `delete(pattern, [response])`, `get(pattern, [response])`, `head(pattern, [response])`, `options(pattern, [response])`, `patch(pattern, [response])`, `post(pattern, [response])`, `put(pattern, [response])`
 
-Convenience methods which call `mock` with the appropriate status
+Convenience methods which call `mock` with the appropriate method
 
 ### `clear()`
 
